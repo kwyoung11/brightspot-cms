@@ -32,7 +32,9 @@ public class History extends Record {
     @Indexed
     private UUID objectId;
 
+    @Raw
     private Map<String, Object> objectOriginals;
+
     private boolean lockIgnored;
 
     /** Creates a blank instance. */

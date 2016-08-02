@@ -56,6 +56,7 @@ public class Draft extends Content {
     @Indexed
     private boolean newContent;
 
+    @Raw
     private Map<String, Map<String, Object>> differences;
 
     /**
