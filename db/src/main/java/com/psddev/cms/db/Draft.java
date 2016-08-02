@@ -244,7 +244,7 @@ public class Draft extends Content {
         }
 
         // Compare list items using roughlyEquals.
-        if (x instanceof List) {
+        if (x instanceof List && y instanceof List) {
             @SuppressWarnings("unchecked")
             List<Object> xList = (List<Object>) x;
             @SuppressWarnings("unchecked")
@@ -257,7 +257,7 @@ public class Draft extends Content {
         }
 
         // Compare map values using roughlyEquals.
-        if (x instanceof Map) {
+        if (x instanceof Map && y instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> xMap = (Map<String, Object>) x;
             @SuppressWarnings("unchecked")
