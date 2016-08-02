@@ -295,9 +295,31 @@ public class Draft extends Content {
 
         Preconditions.checkNotNull(oldValues);
 
+        oldValues = (Map<String, Object>) cloneValue(oldValues);
+
         return differences != null && !differences.isEmpty()
                 ? (Map<String, Object>) mergeValue(environment, findIdMaps(oldValues), differences, oldValues)
                 : oldValues;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Object cloneValue(Object value) {
+        if (value instanceof List) {
+            return ((List<Object>) value).stream()
+                    .map(v -> cloneValue(v))
+                    .collect(Collectors.toList());
+
+        } else if (value instanceof Map) {
+            return ((Map<String, Object>) value).entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> cloneValue(e.getValue()),
+                            (x, y) -> { throw new IllegalStateException(); },
+                            CompactMap::new));
+
+        } else {
+            return value;
+        }
     }
 
     @SuppressWarnings("unchecked")
