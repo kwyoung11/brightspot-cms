@@ -614,12 +614,11 @@ public class Draft extends Content {
         Preconditions.checkNotNull(object);
 
         State state = State.getInstance(object);
-        Map<String, Object> oldValues = state.getSimpleValues();
 
-        state.getExtras().put(OLD_VALUES_EXTRA, oldValues);
+        state.getExtras().put(OLD_VALUES_EXTRA, state.getSimpleValues());
         state.setValues(mergeDifferences(
                 state.getDatabase().getEnvironment(),
-                oldValues,
+                state.getSimpleValues(),
                 getDifferences()));
     }
 
