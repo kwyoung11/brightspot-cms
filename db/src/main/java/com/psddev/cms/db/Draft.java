@@ -310,12 +310,13 @@ public class Draft extends Content {
                     .collect(Collectors.toList());
 
         } else if (value instanceof Map) {
-            return ((Map<String, Object>) value).entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> cloneValue(e.getValue()),
-                            (x, y) -> { throw new IllegalStateException(); },
-                            CompactMap::new));
+            Map<String, Object> clone = new CompactMap<>();
+
+            for (Map.Entry<String, Object> entry : ((Map<String, Object>) value).entrySet()) {
+                clone.put(entry.getKey(), cloneValue(entry.getValue()));
+            }
+
+            return clone;
 
         } else {
             return value;
