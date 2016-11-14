@@ -1,6 +1,7 @@
 package com.psddev.cms.nlp;
 
 import com.google.common.base.Preconditions;
+import com.psddev.cms.db.ToolUser;
 import com.psddev.dari.util.ClassFinder;
 import com.psddev.dari.util.Lazy;
 import com.psddev.dari.util.TypeDefinition;
@@ -63,7 +64,7 @@ public interface SpellChecker {
      * @return {@code null} if no spell checker instance supports spell
      *         checking words in the given {@code locale}.
      */
-    static SpellChecker getInstance(Locale locale) {
+    static SpellChecker getInstance(ToolUser user, Locale locale) {
         Preconditions.checkNotNull(locale);
 
         List<SpellChecker> instances = SpellCheckerPrivate.INSTANCES.get();
@@ -72,7 +73,7 @@ public interface SpellChecker {
                 .filter(c -> c.isPreferred(locale))
                 .findFirst()
                 .orElseGet(() -> instances.stream()
-                        .filter(c -> c.isSupported(locale))
+                        .filter(c -> c.isSupported(user, locale))
                         .findFirst()
                         .orElse(null));
     }
@@ -84,7 +85,7 @@ public interface SpellChecker {
      * @param locale
      *        Can't be {@code null}.
      */
-    boolean isSupported(Locale locale);
+    boolean isSupported(ToolUser user, Locale locale);
 
     /**
      * Returns {@code true} if this spell checker is preferred for the given
@@ -107,7 +108,20 @@ public interface SpellChecker {
      *
      * @return {@code null} if the given {@code word} is spelled correctly.
      */
-    List<String> suggest(Locale locale, String word);
+    List<String> suggest(ToolUser user, Locale locale, String word);
+
+    /**
+     * Adds the {@code word} to the Hunspell dictionary
+     * corresponding to {@code user} and {@code locale}.
+     *
+     * @param user
+     *        Can't be {@code null}.
+     * @param locale
+     *        Can't be {@code null}.
+     * @param word
+     *        Can't be {@code null}.
+     */
+    void addToDictionary(ToolUser user, Locale locale, String word);
 }
 
 class SpellCheckerPrivate {
