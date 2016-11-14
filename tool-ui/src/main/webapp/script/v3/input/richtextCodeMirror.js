@@ -3,6 +3,7 @@
 define([
     'jquery',
     'bsp-utils',
+    'v3/RecalculateDimensions',
     'v3/spellcheck',
     'undomanager',
     'codemirror/lib/codemirror',
@@ -10,7 +11,7 @@ define([
     'codemirror/addon/dialog/dialog',
     'codemirror/addon/search/searchcursor',
     'codemirror/addon/search/search'
-], function($, bsp_utils, spellcheckAPI, UndoManager, CodeMirror) {
+], function($, bsp_utils, RecalculateDimensions, spellcheckAPI, UndoManager, CodeMirror) {
 
     var CodeMirrorRte;
 
@@ -369,7 +370,11 @@ define([
             var $wrapper = $(self.codeMirror.getWrapperElement());
             var wrapperWidth = $wrapper.width();
 
-            $(window).resize(bsp_utils.throttle(500, function () {
+            RecalculateDimensions.bind(element, function () {
+                self.refresh();
+            });
+
+            $(window).resize(bsp_utils.throttle(500, function (event) {
                 var newWrapperWidth = $wrapper.width();
 
                 if (wrapperWidth !== newWrapperWidth) {
@@ -3737,6 +3742,16 @@ define([
                     text: label
                 }).appendTo($div);
 
+                // Check if this is a link with an href attribute
+                if (mark.attributes && mark.attributes.href) {
+                    $('<a/>', {
+                        'class': 'rte2-dropdown-href',
+                        text: mark.attributes.href,
+                        href: mark.attributes.href,
+                        target: '_blank'
+                    }).appendTo($div);
+                }
+
                 // Popup edit defaults to true, but if set to false do not include edit link
                 if (styleObj.popup !== false && styleObj.onClick) {
                     $('<a/>', {
@@ -4809,7 +4824,6 @@ define([
                     event.preventDefault();
                 }
             });
-
         },
 
 
@@ -4877,6 +4891,7 @@ define([
                         // Check if we have replacements for this word
                         result = results[word];
                         if ($.isArray(result)) {
+
                             // Find the location of all occurances
                             indexStart = 0;
                             while ((index = text.indexOf(word, indexStart)) > -1) {
@@ -6981,8 +6996,12 @@ define([
                         var startCh;
                         var styleObj;
 
-                        startCh = markedSpan.from;
-                        endCh = markedSpan.to;
+                        // If the from character is null, that means the mark was carried over from the previous line,
+                        // so treat that as starting at the first character.
+                        startCh = (markedSpan.from === null) ? 0 : markedSpan.from;
+                        // If the to character is null, that means the mark carries over to the next line,
+                        // so treat that as ending at the last character.
+                        endCh = (markedSpan.to === null) ? line.text.length : markedSpan.to;
                         className = markedSpan.marker.className;
 
                         // Skip markers that do not have a className.
@@ -7331,7 +7350,9 @@ define([
                 var char;
                 var span;
                 span = this;
-                char = span.from;
+                // If the from character is null, that means the mark was carried over from the previous line,
+                // so treat that as starting at the first character.
+                char = (span.from === null) ? 0 : span.from;
                 spansByChar[char] = spansByChar[char] || [];
                 spansByChar[char].push(span);
             });
